@@ -24,6 +24,16 @@ public class RedisService {
         return commands.get(key);
     }
 
+    public void setWithTTL(String key, String value, long seconds) {
+        RedisCommands<String, String> commands = connection.sync();
+        commands.setex(key, seconds, value);
+    }
+
+    public Long getTTL(String key) {
+        RedisCommands<String, String> commands = connection.sync();
+        return commands.ttl(key);
+    }
+
     public void shutdown() {
         connection.close();
         redisClient.shutdown();
