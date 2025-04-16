@@ -13,41 +13,37 @@ public class RedisService {
     private final RedisClient redisClient;
     private final StatefulRedisConnection<String, String> connection;
     private final RedisAsyncCommands<String, String> asyncCommands;
+    private final RedisCommands<String, String> syncCommands;
 
     public RedisService(RedisConnectionProvider provider) {
         this.redisClient = RedisClient.create(provider.getRedisURI());
         this.connection = redisClient.connect();
         this.asyncCommands = connection.async();
+        this.syncCommands = connection.sync();
     }
 
     public void set(String key, String value) {
-        RedisCommands<String, String> commands = connection.sync();
-        commands.set(key, value);
+        syncCommands.set(key, value);
     }
 
     public String get(String key) {
-        RedisCommands<String, String> commands = connection.sync();
-        return commands.get(key);
+        return syncCommands.get(key);
     }
 
     public void setWithTTL(String key, String value, long seconds) {
-        RedisCommands<String, String> commands = connection.sync();
-        commands.setex(key, seconds, value);
+        syncCommands.setex(key, seconds, value);
     }
 
     public Long getTTL(String key) {
-        RedisCommands<String, String> commands = connection.sync();
-        return commands.ttl(key);
+        return syncCommands.ttl(key);
     }
 
     public void setUserProfile(String userId, Map<String, String> fields) {
-        RedisCommands<String, String> commands = connection.sync();
-        commands.hset("user:" + userId, fields);
+        syncCommands.hset("user:" + userId, fields);
     }
 
     public Map<String, String> getUserProfile(String userId) {
-        RedisCommands<String, String> commands = connection.sync();
-        return commands.hgetall("user:" + userId);
+        return syncCommands.hgetall("user:" + userId);
     }
 
     public CompletableFuture<String> setAsync(String key, String value) {
