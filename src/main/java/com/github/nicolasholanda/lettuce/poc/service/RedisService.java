@@ -4,7 +4,9 @@ import com.github.nicolasholanda.lettuce.poc.config.RedisConnectionProvider;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.api.reactive.RedisReactiveCommands;
 import io.lettuce.core.api.sync.RedisCommands;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -14,12 +16,14 @@ public class RedisService {
     private final StatefulRedisConnection<String, String> connection;
     private final RedisAsyncCommands<String, String> asyncCommands;
     private final RedisCommands<String, String> syncCommands;
+    private final RedisReactiveCommands<String, String> reactiveCommands;
 
     public RedisService(RedisConnectionProvider provider) {
         this.redisClient = RedisClient.create(provider.getRedisURI());
         this.connection = redisClient.connect();
         this.asyncCommands = connection.async();
         this.syncCommands = connection.sync();
+        this.reactiveCommands = connection.reactive();
     }
 
     public void set(String key, String value) {
@@ -52,6 +56,14 @@ public class RedisService {
 
     public CompletableFuture<String> getAsync(String key) {
         return asyncCommands.get(key).toCompletableFuture();
+    }
+
+    public Mono<String> setReactive(String key, String value) {
+        return reactiveCommands.set(key, value);
+    }
+
+    public Mono<String> getReactive(String key) {
+        return reactiveCommands.get(key);
     }
 
     public void shutdown() {

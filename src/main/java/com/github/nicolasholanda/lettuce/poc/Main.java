@@ -25,6 +25,7 @@ public class Main {
         ttlUsage();
         hashesUsage();
         asyncUsage();
+        reactiveUsage();
 
         redisService.shutdown();
 
@@ -34,6 +35,8 @@ public class Main {
     }
 
     private static void simpleUsage() {
+        System.out.println("-------------- SIMPLE USAGE --------------");
+
         String key = "test";
         redisService.set(key, "123");
 
@@ -41,6 +44,8 @@ public class Main {
     }
 
     private static void ttlUsage() throws InterruptedException {
+        System.out.println("-------------- TTL USAGE --------------");
+
         redisService.setWithTTL("temp-key", "this is temporary", 6);
         System.out.println("TTL: " + redisService.getTTL("temp-key") + " seconds");
 
@@ -53,6 +58,8 @@ public class Main {
     }
 
     private static void hashesUsage() {
+        System.out.println("-------------- HASHES USAGE --------------");
+
         Map<String, String> user = new HashMap<>();
         user.put("name", "Alice");
         user.put("email", "alice@example.com");
@@ -66,9 +73,22 @@ public class Main {
 
     private static void asyncUsage() {
         redisService.setAsync("async-key", "yo from the future")
-                .thenAccept(result -> System.out.println("SET result: " + result));
+        .thenCompose(setResult -> {
+            System.out.println("-------------- ASYNC USAGE --------------");
+            System.out.println("SET result: " + setResult);
+            return redisService.getAsync("async-key");
+        })
+        .thenAccept(getResult -> {
+            System.out.println("GET value: " + getResult);
+        });
+    }
 
-        redisService.getAsync("async-key")
-                .thenAccept(value -> System.out.println("GET value: " + value));
+    private static void reactiveUsage() {
+        redisService.setReactive("reactive-key", "hi from reactive")
+                .doOnNext(result -> System.out.println("-------------- REACTIVE USAGE --------------"))
+                .doOnNext(result -> System.out.println("SET result: " + result))
+                .then(redisService.getReactive("reactive-key"))
+                .doOnNext(value -> System.out.println("GET value: " + value))
+                .block(); // Just to trigger execution here
     }
 }
