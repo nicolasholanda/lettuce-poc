@@ -24,6 +24,7 @@ public class Main {
         simpleUsage();
         ttlUsage();
         hashesUsage();
+        asyncUsage();
 
         redisService.shutdown();
 
@@ -61,5 +62,13 @@ public class Main {
 
         System.out.println("User profile:");
         System.out.println(redisService.getUserProfile("123"));
+    }
+
+    private static void asyncUsage() {
+        redisService.setAsync("async-key", "yo from the future")
+                .thenAccept(result -> System.out.println("SET result: " + result));
+
+        redisService.getAsync("async-key")
+                .thenAccept(value -> System.out.println("GET value: " + value));
     }
 }
