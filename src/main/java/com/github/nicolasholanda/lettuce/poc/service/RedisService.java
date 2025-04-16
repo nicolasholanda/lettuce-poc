@@ -5,6 +5,8 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
+import java.util.Map;
+
 public class RedisService {
     private final RedisClient redisClient;
     private final StatefulRedisConnection<String, String> connection;
@@ -32,6 +34,16 @@ public class RedisService {
     public Long getTTL(String key) {
         RedisCommands<String, String> commands = connection.sync();
         return commands.ttl(key);
+    }
+
+    public void setUserProfile(String userId, Map<String, String> fields) {
+        RedisCommands<String, String> commands = connection.sync();
+        commands.hset("user:" + userId, fields);
+    }
+
+    public Map<String, String> getUserProfile(String userId) {
+        RedisCommands<String, String> commands = connection.sync();
+        return commands.hgetall("user:" + userId);
     }
 
     public void shutdown() {
