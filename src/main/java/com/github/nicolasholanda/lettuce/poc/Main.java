@@ -8,6 +8,13 @@ import com.github.nicolasholanda.lettuce.poc.service.RedisService;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Main class to demonstrate basic Lettuce Redis features:
+ * synchronous operations, TTL, hashes, async, reactive, and pub/sub.
+ *
+ * <p>You can choose between using a local Redis instance or a Redis container via Testcontainers.
+ * By default (no arguments or true as first argument), it will start a Redis container.
+ */
 public class Main {
 
     private static RedisService redisService;
@@ -35,6 +42,9 @@ public class Main {
         }
     }
 
+    /**
+     * Demonstrates basic set/get using synchronous API.
+     */
     private static void simpleUsage() {
         System.out.println("-------------- SIMPLE USAGE --------------");
 
@@ -44,6 +54,9 @@ public class Main {
         System.out.println("Value: " + redisService.get(key));
     }
 
+    /**
+     * Demonstrates setting a value with TTL and observing its expiration.
+     */
     private static void ttlUsage() throws InterruptedException {
         System.out.println("-------------- TTL USAGE --------------");
 
@@ -58,6 +71,9 @@ public class Main {
         System.out.println("Value after 7s: " + redisService.get("temp-key"));
     }
 
+    /**
+     * Demonstrates storing and retrieving a Redis hash (user profile).
+     */
     private static void hashesUsage() {
         System.out.println("-------------- HASHES USAGE --------------");
 
@@ -72,18 +88,24 @@ public class Main {
         System.out.println(redisService.getUserProfile("123"));
     }
 
+    /**
+     * Demonstrates asynchronous set/get using CompletableFuture.
+     */
     private static void asyncUsage() {
         redisService.setAsync("async-key", "yo from the future")
-        .thenCompose(setResult -> {
-            System.out.println("-------------- ASYNC USAGE --------------");
-            System.out.println("SET result: " + setResult);
-            return redisService.getAsync("async-key");
-        })
-        .thenAccept(getResult -> {
-            System.out.println("GET value: " + getResult);
-        });
+                .thenCompose(setResult -> {
+                    System.out.println("-------------- ASYNC USAGE --------------");
+                    System.out.println("SET result: " + setResult);
+                    return redisService.getAsync("async-key");
+                })
+                .thenAccept(getResult -> {
+                    System.out.println("GET value: " + getResult);
+                });
     }
 
+    /**
+     * Demonstrates reactive set/get using Reactor Mono.
+     */
     private static void reactiveUsage() {
         redisService.setReactive("reactive-key", "hi from reactive")
                 .doOnNext(result -> System.out.println("-------------- REACTIVE USAGE --------------"))
@@ -93,14 +115,17 @@ public class Main {
                 .block(); // Just to trigger execution here
     }
 
+    /**
+     * Demonstrates simple publish/subscribe messaging using Redis Pub/Sub.
+     */
     private static void pubSubUsage() throws InterruptedException {
         redisService.subscribe("chat");
 
-        Thread.sleep(1000);
+        Thread.sleep(1000); // Give time for subscription
 
         redisService.publish("chat", "Hey from Lettuce Pub/Sub!");
         redisService.publish("chat", "Another message");
 
-        Thread.sleep(2000);
+        Thread.sleep(2000); // Wait to see the messages
     }
 }
