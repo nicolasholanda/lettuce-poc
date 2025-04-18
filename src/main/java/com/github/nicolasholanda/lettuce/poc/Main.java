@@ -26,6 +26,7 @@ public class Main {
         hashesUsage();
         asyncUsage();
         reactiveUsage();
+        pubSubUsage();
 
         redisService.shutdown();
 
@@ -90,5 +91,16 @@ public class Main {
                 .then(redisService.getReactive("reactive-key"))
                 .doOnNext(value -> System.out.println("GET value: " + value))
                 .block(); // Just to trigger execution here
+    }
+
+    private static void pubSubUsage() throws InterruptedException {
+        redisService.subscribe("chat");
+
+        Thread.sleep(1000);
+
+        redisService.publish("chat", "Hey from Lettuce Pub/Sub!");
+        redisService.publish("chat", "Another message");
+
+        Thread.sleep(2000);
     }
 }

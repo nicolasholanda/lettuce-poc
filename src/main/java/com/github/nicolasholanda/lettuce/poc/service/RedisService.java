@@ -6,6 +6,8 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.reactive.RedisReactiveCommands;
 import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.pubsub.RedisPubSubListener;
+import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
@@ -64,6 +66,30 @@ public class RedisService {
 
     public Mono<String> getReactive(String key) {
         return reactiveCommands.get(key);
+    }
+
+    public void subscribe(String channel) {
+        StatefulRedisPubSubConnection<String, String> pubSubConnection = redisClient.connectPubSub();
+        pubSubConnection.addListener(new RedisPubSubListener<>() {
+            @Override
+            public void message(String channel, String message) {
+                System.out.println("[SUB] Received message: " + message + " on channel: " + channel);
+            }
+
+            @Override public void message(String pattern, String channel, String message) {}
+            @Override public void subscribed(String channel, long count) {
+                System.out.println("[SUB] Subscribed on channel: " + channel);
+            }
+            @Override public void psubscribed(String pattern, long count) {}
+            @Override public void unsubscribed(String channel, long count) {}
+            @Override public void punsubscribed(String pattern, long count) {}
+        });
+
+        pubSubConnection.sync().subscribe(channel);
+    }
+
+    public void publish(String channel, String message) {
+        connection.sync().publish(channel, message);
     }
 
     public void shutdown() {
