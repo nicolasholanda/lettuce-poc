@@ -144,6 +144,28 @@ public class RedisService {
     }
 
     /**
+     * Checks if the given key exists in Redis.
+     *
+     * @param key the key to check
+     * @return true if the key exists, false otherwise
+     */
+    public boolean exists(String key) {
+        return syncCommands.exists(key) > 0;
+    }
+
+    /**
+     * Async check for key existence.
+     *
+     * @param key the key to check
+     * @return CompletableFuture with true if key exists, false otherwise
+     */
+    public CompletableFuture<Boolean> existsAsync(String key) {
+        return asyncCommands.exists(key)
+                .toCompletableFuture()
+                .thenApply(count -> count > 0);
+    }
+
+    /**
      * Closes Redis connection and shuts down the client.
      */
     public void shutdown() {

@@ -34,6 +34,7 @@ public class Main {
         asyncUsage();
         reactiveUsage();
         pubSubUsage();
+        existsUsage();
 
         redisService.shutdown();
 
@@ -127,5 +128,15 @@ public class Main {
         redisService.publish("chat", "Another message");
 
         Thread.sleep(2000); // Wait to see the messages
+    }
+
+    private static void existsUsage() {
+        System.out.println("-------------- EXISTS USAGE --------------");
+
+        String existingKey = "test";
+        String missingKey = "non-existent";
+
+        System.out.println("Key 'test' exists? " + redisService.exists(existingKey));
+        System.out.println("Key 'non-existent' exists? " + redisService.exists(missingKey));
     }
 }
